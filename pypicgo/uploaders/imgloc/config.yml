@@ -1,0 +1,10 @@
+uploader:
+  name: imgloc
+  module: pypicgo.uploaders.imgloc.uploader.ImglocUploader
+  config:
+    domain: https://imgloc.com/
+    api: https://imgloc.com/api/1/upload
+    x_api_key: "chv_ia85_d2ab38c987b8c1ba42ffb18122d57561e773fed2cc100baf8c0e2eb1009e9393b74c528800e666b99e702c96cc2e29caa891b1f76158189147a9d501c19471b6"
+plugins:
+  - module: pypicgo.plugins.rename.ReNamePlugin
+    config:
