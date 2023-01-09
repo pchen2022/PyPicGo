@@ -1,6 +1,6 @@
 uploader:
-  name: baiducloud
-  module: pypicgo.uploaders.baiducloud.uploader.BaiducloudUploader
+  name: baidunetdisk
+  module: pypicgo.uploaders.baidunetdisk.uploader.BaiduNetdiskUploader
   config:
     apis:
       - http://pan.baidu.com/rest/2.0/xpan/file

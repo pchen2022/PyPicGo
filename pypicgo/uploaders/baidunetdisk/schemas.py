@@ -2,7 +2,7 @@ from typing import Optional, List
 from pypicgo.core.models import PluginModel
 
 
-class BaiducloudUploaderConfig:
+class BaiduNetdiskUploaderConfig:
     api: str
     plugins: Optional[List[PluginModel]] = []
 

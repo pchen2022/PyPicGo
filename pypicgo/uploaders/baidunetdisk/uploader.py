@@ -10,8 +10,8 @@ from pypicgo.core.base.result import Result
 from pypicgo.core.logger import logger
 
 
-class BaiducloudUploader(CommonUploader):
-    name: str = 'baiducloudUploader'
+class BaiduNetdiskUploader(CommonUploader):
+    name: str = 'baiduNetdiskUploader'
 
     def __init__(self,
                  apis: List[str],
@@ -28,7 +28,8 @@ class BaiducloudUploader(CommonUploader):
         self.client_secret = client_secret
         self.app_name = app_name
         self.plugins = plugins
-
+        self.apps = "apps"  # 对应网盘的我的应用数据
+        self.type = "tmpfile"
         logger.info('load config successfully')
 
     def _file_info(self):
@@ -38,7 +39,7 @@ class BaiducloudUploader(CommonUploader):
             size = len(byte)
             md5 = hashlib.md5(byte).hexdigest()
         return {
-            "path": os.path.join("app", self.app_name, self.file.filename),
+            "path": os.path.join(self.apps, self.app_name, self.file.filename),
             "size": size,
             "block_list": '["%s"]' % md5
         }
@@ -52,47 +53,73 @@ class BaiducloudUploader(CommonUploader):
         payload["rtype"] = rtype
         payload["isdir"] = isdir
         payload["autoinit"] = autoinit
-        # url = self.apis[0] + "?method=precreate&access_token=%s" % self.access_token
-        response = requests.post(self.apis[0], params=params, data=payload)
-        # response = requests.post(url, data=payload)
-        print(response.json())
-        self.is_success_precreate(response)
+        resp = requests.post(self.apis[0], params=params, data=payload)
+        return self.is_success_precreate(resp)
+
+    def _upload(self, uploadid, partseq=0):
+        # 上传
+        params = dict()
+        params["method"] = "upload"
+        params["access_token"] = self.access_token
+        params["path"] = os.path.join(self.apps, self.app_name, self.file.filename)
+        params["type"] = self.type
+        params["uploadid"] = uploadid
+        params["partseq"] = partseq
+
+        with open(self.file.tempfile.resolve(), 'rb') as f:
+            resp = requests.post(
+                url=self.apis[1],
+                params=params,
+                files={'file': (self.file.filename, f, 'application/octet-stream')}
+            )
+        return self.is_success_upload(resp)
+
+    def create(self, uploadid, rtype=1, isdir=0):
+        # 创建文件
+        params = dict()
+        params["method"] = "create"
+        params["access_token"] = self.access_token
+        payload = self._file_info()
+        payload["rtype"] = rtype
+        payload["isdir"] = isdir
+        payload["uploadid"] = uploadid
+        resp = requests.post(self.apis[2], params=params, data=payload)
+        return self.is_success(resp)
 
     def upload(self) -> Result:
         uploadid = self.precreate()
-        return
-        headers = dict()
-        headers['X-API-Key'] = self.x_api_key
-        with open(self.file.tempfile.resolve(), 'rb') as f:
-            resp = requests.post(
-                url=self.api,
-                headers=headers,
-                files={'source': ('file_name', f, 'application/octet-stream')}
-            )
+        print(uploadid)
+        self._upload(uploadid)
+        return self.create(uploadid)
 
-        result = self.is_success(resp=resp)
-        return result
-
-    def is_success_precreate(self, resp: Response) -> str:
+    @staticmethod
+    def is_success_precreate(resp: Response) -> str:
         origin_resp = resp.json()
         errno = origin_resp.get('errno', -1)
         if errno == 0:
             return origin_resp['uploadid']
+        else:
+            logger.warning(f'baidunetdisk precreate fail')
+            print(origin_resp)
+
+    def is_success_upload(self, resp: Response) -> Result:
+        pass
 
     def is_success(self, resp: Response) -> Result:
         origin_resp = resp.json()
-        if resp.status_code == 200:
-            download_url = origin_resp['image']['url']
+        errno = origin_resp.get('errno', -1)
+        if errno == 0:
             return Result(
                 status=True,
                 file=self.file,
-                message='uload success',
-                remote_url=download_url,
+                message='upload baidu netdisk success',
+                remote_url=origin_resp['fs_id'],
                 origin_resp=origin_resp
             )
         else:
-            reason = origin_resp['error']['message']
-            logger.warning(f'upload fail, message:{reason}')
+            print(origin_resp)
+            reason = "error"
+            logger.warning(f'baidunetdisk create fail, message:{reason}')
             return Result(
                 status=False,
                 file=self.file,
