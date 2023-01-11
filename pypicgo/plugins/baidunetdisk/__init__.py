@@ -2,35 +2,27 @@ import hashlib
 import os
 
 import requests
-from typing import List
 from requests import Response
-from pypicgo.core.base.uploader import CommonUploader
-from pypicgo.core.models import PluginModel
-from pypicgo.core.base.result import Result
+
+from pypicgo.core.base.file import UploadFile
+from pypicgo.core.base.plugin import BeforePlugin
+from pypicgo.core.exceptions import PluginExecuteException
 from pypicgo.core.logger import logger
 
 
-class BaiduNetdiskUploader(CommonUploader):
-    name: str = 'baiduNetdiskUploader'
+class BaiduNetdiskPlugin(BeforePlugin):
+    name = 'baidunetdisk'
 
-    def __init__(self,
-                 apis: List[str],
-                 access_token: str,
-                 client_id: str,
-                 client_secret: str,
-                 app_name: str,
-                 plugins: List[PluginModel],
-                 **kwargs
-                 ):
+    def __init__(self, apis, access_token, client_id, client_secret, app_name):
         self.apis = apis
         self.access_token = access_token
         self.client_id = client_id
         self.client_secret = client_secret
         self.app_name = app_name
-        self.plugins = plugins
         self.apps = "apps"  # 对应网盘的我的应用数据
         self.type = "tmpfile"
-        logger.info('load config successfully')
+        self.file = None
+        super().__init__()
 
     def _file_info(self):
         file_path = str(self.file.tempfile)
@@ -86,26 +78,6 @@ class BaiduNetdiskUploader(CommonUploader):
         resp = requests.post(self.apis[2], params=params, data=payload)
         return self.is_success(resp)
 
-    def upload(self) -> Result:
-        try:
-            uploadid = self.precreate()
-            self._upload(uploadid)
-            fs_id = self.create(uploadid)
-            return Result(
-                status=True,
-                file=self.file,
-                message='upload baidu netdisk success',
-                remote_url=str(fs_id),
-                origin_resp={}
-            )
-        except Exception as e:
-            logger.error(f'upload fail: {e}', exc_info=True)
-            return Result(
-                status=False,
-                file=self.file,
-                message=str(e),
-            )
-
     @staticmethod
     def is_success_precreate(resp: Response) -> str:
         origin_resp = resp.json()
@@ -146,3 +118,15 @@ class BaiduNetdiskUploader(CommonUploader):
             error_msg = error_code.get(errno, "create fail")
             logger.error(f'baidunetdisk create fail, message:{error_msg}')
             raise Exception(f'baidunetdisk create fail, message:{error_msg}')
+
+    def execute(self, file: UploadFile) -> UploadFile:
+        self.file = file
+        try:
+            uploadid = self.precreate()
+            self._upload(uploadid)
+            fs_id = self.create(uploadid)
+            file.fs_id = fs_id
+            return file
+        except Exception as e:
+            logger.error(f'plugin baidunetdisk fail: {e}', exc_info=True)
+            raise PluginExecuteException(str(e))

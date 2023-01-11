@@ -9,6 +9,7 @@ requests-toolbelt = "*"
 pyyaml = "*"
 pyperclip = "*"
 pillow = "*"
+future = "*"
 
 [dev-packages]
 

@@ -79,7 +79,6 @@ class Settings:
                 cur_uploader = default_uploader
             uploader_plugins = cur_uploader.pop('plugins', [])
             uploder = UploaderModel(**cur_uploader)
-            uploader_plugins = cur_uploader.get('plugins', [])
             if not uploader_plugins:
                 uploader_plugins = []
             plugin_dicts = dict()

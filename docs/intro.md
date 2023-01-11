@@ -93,6 +93,35 @@ uploaders: # 可用图床
         - http://up-z1.qiniup.com
         access_key: xxx
         secret_key:  xxxx
+  imgloc: # 免费图床imgloc配置
+    module: pypicgo.uploaders.imgloc.uploader.ImglocUploader
+    config:
+      domain: https://imgloc.com/
+      api: https://imgloc.com/api/1/upload
+      x_api_key: xxx
+    plugins: # imgloc图床私有插件,同步将图片上传到百度云盘做备份
+      - module: pypicgo.plugins.baidunetdisk.BaiduNetdiskPlugin
+        config:
+          apis:
+            - http://pan.baidu.com/rest/2.0/xpan/file
+            - https://d.pcs.baidu.com/rest/2.0/pcs/superfile2
+            - https://pan.baidu.com/rest/2.0/xpan/file
+          access_token: xxx
+          client_id: xxx
+          client_secret: xxx
+          app_name: xxx
+  baidunetdisk: # 百度云盘配置,支持上传云盘
+    module: pypicgo.uploaders.baidunetdisk.uploader.BaiduNetdiskUploader
+    config:
+      apis:
+        - http://pan.baidu.com/rest/2.0/xpan/file
+        - https://d.pcs.baidu.com/rest/2.0/pcs/superfile2
+        - https://pan.baidu.com/rest/2.0/xpan/file
+      access_token: xxx
+      client_id: xxx
+      client_secret: xxx
+      app_name: xxx
+    plugins:
 ```
 
 更多的配置说明参考文档

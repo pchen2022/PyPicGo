@@ -31,6 +31,7 @@ class ImglocUploader(CommonUploader):
             resp = requests.post(
                 url=self.api,
                 headers=headers,
+                data={"title": self.file.filename},
                 files={'source': ('file_name', f, 'application/octet-stream')}
             )
 
@@ -41,11 +42,12 @@ class ImglocUploader(CommonUploader):
         origin_resp = resp.json()
         if resp.status_code == 200:
             download_url = origin_resp['image']['url']
+            pic_title = f"{self.file.fs_id}-{self.file.filename}"
             return Result(
                 status=True,
                 file=self.file,
-                message='uload success',
-                remote_url=download_url,
+                message='upload success',
+                remote_url=f'{download_url} "{pic_title}"',
                 origin_resp=origin_resp
             )
         else:
