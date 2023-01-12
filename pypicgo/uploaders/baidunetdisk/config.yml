@@ -6,6 +6,7 @@ uploader:
       - http://pan.baidu.com/rest/2.0/xpan/file
       - https://d.pcs.baidu.com/rest/2.0/pcs/superfile2
       - https://pan.baidu.com/rest/2.0/xpan/file
+      - http://pan.baidu.com/rest/2.0/xpan/multimedia
     access_token: 百度网盘Access Token有效期30天
     client_id: 应用的AppKey
     client_secret: 应用的SecretKey

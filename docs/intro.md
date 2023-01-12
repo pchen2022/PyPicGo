@@ -106,6 +106,7 @@ uploaders: # 可用图床
             - http://pan.baidu.com/rest/2.0/xpan/file
             - https://d.pcs.baidu.com/rest/2.0/pcs/superfile2
             - https://pan.baidu.com/rest/2.0/xpan/file
+            - http://pan.baidu.com/rest/2.0/xpan/multimedia
           access_token: xxx
           client_id: xxx
           client_secret: xxx
@@ -117,6 +118,7 @@ uploaders: # 可用图床
         - http://pan.baidu.com/rest/2.0/xpan/file
         - https://d.pcs.baidu.com/rest/2.0/pcs/superfile2
         - https://pan.baidu.com/rest/2.0/xpan/file
+        - http://pan.baidu.com/rest/2.0/xpan/multimedia
       access_token: xxx
       client_id: xxx
       client_secret: xxx
